@@ -49,7 +49,6 @@ namespace labTSISA
             Pen axisPen = new Pen(Color.Black, 2);
             g.DrawLine(axisPen, 0, height, width, height); // Ось X
             g.DrawLine(axisPen, 0, 0, 0, height); // Ось Y
-
             // Рисуем ограничения
             intersectionPoints.Clear(); // Очищаем список точек пересечения перед перерисовкой
             DrawConstraint(g, x => 8 - x, scaleX, scaleY, width, height, Color.Blue, "x1 + x2 <= 8");
