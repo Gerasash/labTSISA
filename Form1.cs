@@ -12,7 +12,14 @@ namespace labTSISA
         private int offsetX = 50; // Смещение по оси X
         private int offsetY = 150; // Смещение по оси Y
         private List<PointF> points; // Список точек для построения выпуклой оболочки
-
+        private List<Func<PointF, bool>> constraintsVarA; // Список ограничений
+        private List<Func<PointF, bool>> constraintsVarB; // Список ограничений
+        private List<Func<PointF, bool>> constraintsVarC; // Список ограничений
+        private List<Func<PointF, bool>> constraintsVarD; // Список ограничений
+        private List<Func<PointF, bool>> constraintsVarZ0; // Список ограничений
+        private List<Func<PointF, bool>> constraintsVarZ1; // Список ограничений
+        private List<Func<PointF, bool>> constraintsVarZ2; // Список ограничений
+        private List<Func<PointF, bool>> constraintsVarZ3; // Список ограничений
         public Form1()
         {
             InitializeComponent();
@@ -37,14 +44,75 @@ namespace labTSISA
             // Инициализация списка точек
             points = new List<PointF>
             {
-                new PointF(2, 3),
-                new PointF(3, 6),
-                new PointF(4, 4),
-                new PointF(5, 5),
-                new PointF(7, 2),
-                new PointF(8, 7),
-                new PointF(9, 1)
+                new PointF(0, 6),
             };
+            constraintsVarZ0 = new List<Func<PointF, bool>>
+            {
+                p => p.X + 2* p.Y <= 8,       // x1 + 2x2 <= 8
+                p => p.X + p.Y <= 6,          // x1 + x2 <= 6
+                p => 2 * p.X + 3 * p.Y >= 3,  // 2x1 + 3x2 >= 3
+                p => p.X >= 0,                // x1 >= 0
+                p => p.Y >= 0                 // x2 >= 0
+            };
+            constraintsVarZ1 = new List<Func<PointF, bool>> 
+            {
+                p => p.X + p.Y <= 8,          // x1 + x2 <= 8
+                p => p.X + 3 * p.Y <= 6,      // x1 + 3x2 <= 6
+                p => p.X + 2 * p.Y >= 3,      // x1 + 2x2 >= 3
+                p => p.X >= 0,                // x1 >= 0
+                p => p.Y >= 0                 // x2 >= 0
+            };
+            constraintsVarZ2 = new List<Func<PointF, bool>>
+            {
+                p => p.X + 2* p.Y >= 8,       // x1 + 2x2 >= 8
+                p => p.X + 3 * p.Y >= 6,      // x1 + 3x2 >= 6
+                p => 2 * p.X + 3 * p.Y >= 3,  // 2x1 + 3x2 >= 3
+                p => p.X >= 0,                // x1 >= 0
+                p => p.Y >= 0                 // x2 >= 0
+            };
+            constraintsVarZ3 = new List<Func<PointF, bool>>
+            {
+                p => p.X + 2 * p.Y <= 4,      // x1 + 2x2 <= 4
+                p => 2 * p.X + p.Y <= 6,      // 2x1 + x2 <= 6
+                p => p.X + p.Y >= 8,          // x1 + x2 >= 8
+                p => p.X >= 0,                // x1 >= 0
+                p => p.Y >= 0                 // x2 >= 0
+            };
+
+
+            constraintsVarA = new List<Func<PointF, bool>>
+            {
+                p => p.X + 2* p.Y <= 8,          // x1 + 2x2 <= 8
+                p => 3 * p.X + p.Y <= 6,      // 3x1 + x2 <= 6
+                p => 2 * p.X + 3 * p.Y >= 3,  // 2x1 + 3x2 >= 3
+                p => p.X >= 0,                // x1 >= 0
+                p => p.Y >= 0                 // x2 >= 0
+            };
+            constraintsVarB = new List<Func<PointF, bool>>
+            {
+                p => p.X + 2* p.Y <= 8,          // x1 + x2 <= 8
+                p => 3 * p.X + p.Y <= 6,      // 3x1 + x2 <= 6
+                p => 2 * p.X + 3 * p.Y >= 3,  // 2x1 + 3x2 >= 3
+                p => p.X >= 0,                // x1 >= 0
+                p => p.Y >= 0                 // x2 >= 0
+            };
+            constraintsVarC = new List<Func<PointF, bool>>
+            {
+                p => p.X + 2* p.Y <= 8,          // x1 + x2 <= 8
+                p => 3 * p.X + p.Y <= 6,      // 3x1 + x2 <= 6
+                p => 2 * p.X + 3 * p.Y >= 3,  // 2x1 + 3x2 >= 3
+                p => p.X >= 0,                // x1 >= 0
+                p => p.Y >= 0                 // x2 >= 0
+            };
+            constraintsVarD = new List<Func<PointF, bool>>
+            {
+                p => p.X + 2* p.Y <= 8,          // x1 + x2 <= 8
+                p => 3 * p.X + p.Y <= 6,      // 3x1 + x2 <= 6
+                p => 2 * p.X + 3 * p.Y >= 3,  // 2x1 + 3x2 >= 3
+                p => p.X >= 0,                // x1 >= 0
+                p => p.Y >= 0                 // x2 >= 0
+            };
+
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -66,11 +134,46 @@ namespace labTSISA
 
             // Рисуем насечки и подписи на осях
             DrawAxisTicks(g, scaleX, scaleY, width, height);
-
-            // Рисуем ограничения
-            DrawConstraint(g, x => 8 - x, scaleX, scaleY, width, height, Color.Blue, "x1 + x2 <= 8");
-            DrawConstraint(g, x => 6 - 3 * x, scaleX, scaleY, width, height, Color.Green, "3x1 + x2 <= 6");
+            // Рисуем ограничения Вариант Z0
+            DrawConstraint(g, x => (8 - x) / 2, scaleX, scaleY, width, height, Color.Blue, "x1 + 2x2 <= 8");
+            DrawConstraint(g, x => 6 - x, scaleX, scaleY, width, height, Color.Green, "x1 + x2 <= 6");
             DrawConstraint(g, x => (3 - 2 * x) / 3, scaleX, scaleY, width, height, Color.Orange, "2x1 + 3x2 >= 3");
+
+            // Рисуем ограничения Вариант Z1
+            /*            DrawConstraint(g, x => (8 - x), scaleX, scaleY, width, height, Color.Blue, "x1 + x2 <= 8");
+                        DrawConstraint(g, x => (6 - x) / 3, scaleX, scaleY, width, height, Color.Green, "x1 + 3x2 <= 6");
+                        DrawConstraint(g, x => (3 - x) / 2, scaleX, scaleY, width, height, Color.Orange, "x1 + 2x2 >= 3");*/
+
+            // Рисуем ограничения Вариант Z2
+            /*            DrawConstraint(g, x => (8 - x) / 2, scaleX, scaleY, width, height, Color.Blue, "x1 + 2x2 >= 8");
+                        DrawConstraint(g, x => (6 - x)/3, scaleX, scaleY, width, height, Color.Green, "x1 + 3x2 >= 6");
+                        DrawConstraint(g, x => (3 - 2 * x) / 3, scaleX, scaleY, width, height, Color.Orange, "2x1 + 3x2 >= 3");*/
+
+            // Рисуем ограничения Вариант Z3
+            /*DrawConstraint(g, x => (4 - x)/2, scaleX, scaleY, width, height, Color.Blue, "x1 + 2x2 <= 4");
+            DrawConstraint(g, x => (6 - 2*x), scaleX, scaleY, width, height, Color.Green, "2x1 + x2 <= 6");
+            DrawConstraint(g, x => (8 - x), scaleX, scaleY, width, height, Color.Orange, "x1 + x2 >= 8");*/
+
+            // Рисуем ограничения Вариант А
+            /*DrawConstraint(g, x => (8 - x)/2, scaleX, scaleY, width, height, Color.Blue, "x1 + 2x2 <= 8");
+            DrawConstraint(g, x => 6 - 3 * x, scaleX, scaleY, width, height, Color.Green, "3x1 + x2 <= 6");
+            DrawConstraint(g, x => (3 - 2 * x) / 3, scaleX, scaleY, width, height, Color.Orange, "2x1 + 3x2 >= 3");*/
+
+            // Рисуем ограничения Вариант Б
+            /*DrawConstraint(g, x => (8 - x)/4, scaleX, scaleY, width, height, Color.Blue, "x1 + 4x2 <= 8");
+            DrawConstraint(g, x => 6 - 3 * x, scaleX, scaleY, width, height, Color.Green, "3x1 + x2 <= 6");
+            DrawConstraint(g, x => (3 - 4 * x) / 3, scaleX, scaleY, width, height, Color.Orange, "4x1 + 3x2 >= 3");*/
+
+            // Рисуем ограничения Вариант В
+            /*          DrawConstraint(g, x => (10 - x)/2, scaleX, scaleY, width, height, Color.Blue, "x1 + 2x2 >= 10");
+                      DrawConstraint(g, x => 6 - 2 * x, scaleX, scaleY, width, height, Color.Green, "2x1 + x2 >= 6");
+                      DrawConstraint(g, x => (3 - 2 * x) / 3, scaleX, scaleY, width, height, Color.Orange, "2x1 + 3x2 >= 3");*/
+
+            // Рисуем ограничения Вариант Г
+            /*DrawConstraint(g, x => (8 - x)/2, scaleX, scaleY, width, height, Color.Blue, "x1 + 2x2 <= 8");
+            DrawConstraint(g, x => (6 - x)/3, scaleX, scaleY, width, height, Color.Green, "x1 + 3x2 <= 6");
+            DrawConstraint(g, x => (10 - x), scaleX, scaleY, width, height, Color.Orange, "x1 + x2 >= 10");*/
+
 
             // Рисуем целевую функцию
             DrawObjectiveFunction(g, zValue, scaleX, scaleY, width, height, Color.Red);
@@ -90,8 +193,43 @@ namespace labTSISA
                 g.DrawLine(Pens.Red, offsetX + start.X * scaleX, height - offsetY - start.Y * scaleY,
                     offsetX + end.X * scaleX, height - offsetY - end.Y * scaleY);
             }
-        }
 
+            // Находим и рисуем область пересечения ограничений
+            List<PointF> feasibleRegion = FindFeasibleRegion();
+            if (feasibleRegion.Count > 0)
+            {
+                DrawPolygon(g, feasibleRegion, scaleX, scaleY, width, height);
+            }
+        }
+        private List<PointF> FindFeasibleRegion()
+        {
+            var feasiblePoints = new List<PointF>();
+            for (float x = 0; x <= 10; x += 0.1f)
+            {
+                for (float y = 0; y <= 10; y += 0.1f)
+                {
+                    var point = new PointF(x, y);
+                    //тут
+                    if (constraintsVarZ0.All(c => c(point)))
+                    {
+                        feasiblePoints.Add(point);
+                    }
+                }
+            }
+            return JarvisMarch(feasiblePoints); // Возвращаем выпуклую оболочку
+        }
+        private void DrawPolygon(Graphics g, List<PointF> points, float scaleX, float scaleY, int width, int height)
+        {
+            if (points.Count > 1)
+            {
+                PointF[] scaledPoints = points.Select(p => new PointF(
+                    offsetX + p.X * scaleX,
+                    height - offsetY - p.Y * scaleY)).ToArray();
+
+                g.FillPolygon(new SolidBrush(Color.FromArgb(100, Color.LightBlue)), scaledPoints);
+                g.DrawPolygon(Pens.Blue, scaledPoints);
+            }
+        }
         // Функция алгоритма Джарвиса для нахождения выпуклой оболочки
         private List<PointF> JarvisMarch(List<PointF> points)
         {
@@ -160,7 +298,9 @@ namespace labTSISA
 
             for (float x = 0; x <= 10; x += 0.1f)
             {
-                float y = (float)((z - x) / 3.0); // Целевая функция: z = x1 + 3x2 -> x2 = (z - x1) / 3
+               // float y = (float)((z - x) / 3.0); // A Целевая функция: z = x1 + 3x2 -> x2 = (z - x1) / 3
+                //float y = (float)((z - 2*x) / 3.0); // Z0 Целевая функция: z = 2x1 + 3x2 -> x2 = (z - 2x1) / 3 
+                float y = (float)((z - 2 * x) / 3.0); // Z1 Целевая функция: z = 2x1 + 4x2 -> x2 = (z - 2x1) / 4 
                 if (y >= 0 && y <= 10)
                 {
                     PointF currentPoint = new PointF(offsetX + x * scaleX, height - offsetY - y * scaleY);
